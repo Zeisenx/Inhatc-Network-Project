@@ -59,15 +59,22 @@ def set_timer(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('Usage: /set <seconds>')
 
 
-def unset(update: Update, context: CallbackContext) -> None:
-    """Remove the job if the user changed their mind."""
-    chat_id = update.message.chat_id
-    job_removed = remove_job_if_exists(str(chat_id), context)
-    text = 'Timer successfully cancelled!' if job_removed else 'You have no active timer.'
-    update.message.reply_text(text)
+def getInfo(barcode_id):
+    url = 'http://www.gs1kr.org/Service/Service/appl/01.asp'
+
+    payload = {'MEMB_DIV': 1, 'CODE': barcode_id, 'CODE1': ''}
+    a = requests.post(url, data=payload)
+
+    result_soup = BeautifulSoup(a.text, 'html.parser')
+    data = result_soup.find('table', {'class': ['odd', 'nofirst', 'tc']})
+
+    return data.select('tr > td')[1].get_text(), data.select('tr > td')[3].get_text()
 
 
 def main():
+    COLA_ID = '8801094082604'
+    print(getInfo(COLA_ID))
+
     """Run bot."""
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
