@@ -13,7 +13,7 @@ class InhatcItemDB:
         return self.__db[chat_id].insert_one(kwargs)
 
     def remove(self, chat_id, key):
-        self.__db[chat_id].remove({"id": key})
+        self.__db[chat_id].remove({"_id": key})
 
     def find_all(self, chat_id):
         return list(self.__db[chat_id].find())

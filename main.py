@@ -2,9 +2,10 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
-from telegram import Update
+from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
+from datetime import datetime, date, time, timedelta
 from content import token_id as telegramtoken
 from customlib import db_management as dbm
 
@@ -109,7 +110,14 @@ def check_items():
     threading.Timer(60.0, check_items).start()
     for member in inhatc_db.find_members():
         for item in inhatc_db.find_all(member):
-            print(item['_id'])
+            announced = False
+            if date.today() + timedelta(days=3) > date.fromisoformat(item['expire_date']):
+                announced = True
+                mainBot.send_message(member, text='{0} 제품의 유통기한이 3일 남았습니다.'.format(item['name']))
+
+            # 알렸으면 재고에서 삭제
+            if announced:
+                inhatc_db.remove(member, item['_id'])
 
 def main():
     global inhatc_db
@@ -127,6 +135,9 @@ def main():
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
     updater = Updater(telegramtoken.id, use_context=True)
+
+    global mainBot
+    mainBot = updater.bot
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
