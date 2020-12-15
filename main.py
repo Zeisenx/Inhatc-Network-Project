@@ -6,11 +6,13 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
 from content import token_id as telegramtoken
+from customlib import db_management as dbm
+
+import threading
 
 import pyzbar.pyzbar as pyzbar
 import cv2
 
-from pymongo import MongoClient
 # import picamera
 
 # Enable logging
@@ -102,12 +104,23 @@ def getInfo(barcode_id):
         return None
 
 
+# TODO : 60초가 아니라, 날짜가 지날때마다 체크하기
+def check_items():
+    threading.Timer(60.0, check_items).start()
+    for member in inhatc_db.find_members():
+        for item in inhatc_db.find_all(member):
+            print(item['_id'])
+
 def main():
-    COLA_ID = '8801094082604'
-    print(getInfo(COLA_ID))
+    global inhatc_db
+    inhatc_db = dbm.InhatcItemDB()
 
-    test_sample_image()
+    # inhatc_db.add('채팅번호', barcode_id=barcode_id, name='코카콜라!!')
+    # COLA_ID = '8801094082604'
+    # print(getInfo(COLA_ID))
+    # test_sample_image()
 
+    check_items()
 
     """Run bot."""
     # Create the Updater and pass it your bot's token.
