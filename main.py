@@ -10,6 +10,7 @@ from content import token_id as telegramtoken
 import pyzbar.pyzbar as pyzbar
 import cv2
 
+from pymongo import MongoClient
 # import picamera
 
 # Enable logging
@@ -106,6 +107,7 @@ def main():
     print(getInfo(COLA_ID))
 
     test_sample_image()
+
 
     """Run bot."""
     # Create the Updater and pass it your bot's token.
