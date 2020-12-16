@@ -23,10 +23,14 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# 이미지를 받아 이미지를 디코딩 > 바코드 타입(.type), 바코드 번호(.data)를 출력
+# 한개가 아닌 여러개의 튜플으로 리턴되는 이유는 이미지 안에 여러 바코드가 있을 수 있기 때문
 def decode_image(image):
     decoded_image = pyzbar.decode(image)
     return decoded_image
 
+# sample_image.jpg를 읽어와서 바코드 번호를 테스트
+# test_result.md 참조
 def test_sample_image():
     image = cv2.imread('./content/sample_image.jpg')
     decoded_image = decode_image(image)
@@ -35,6 +39,8 @@ def test_sample_image():
         print(getInfo(obj.data.decode('utf-8')))
 
 
+# 라즈베리파이 카메라 모듈의 사진 찍기
+# 라즈베리파이에서 테스트할 때 주석 해제 후 사용
 def takeShot(_time):
     pass
     # stream = io.BytesIO()
@@ -45,6 +51,9 @@ def takeShot(_time):
     # stream.seek(0)
     # return stream
 
+
+# start, alarm, remove_job_if_exists, set_timer는 타이머 봇 뼈대
+# 추후 제거되거나 수정될 수 있음.
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -90,6 +99,9 @@ def set_timer(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('Usage: /set <seconds>')
 
 
+# 바코드 번호를 gs1 사이트에 post형식으로 보내고 제품 회사 정보를 출력
+# return : 0번째 인덱스는 한글형식, 1번째 인덱스는 영어형식
+# return Error : 오류 발생시 None 리턴
 def getInfo(barcode_id):
     try:
         url = 'http://www.gs1kr.org/Service/Service/appl/01.asp'
@@ -105,6 +117,7 @@ def getInfo(barcode_id):
         return None
 
 
+# 유통기한 알림기능
 # TODO : 60초가 아니라, 날짜가 지날때마다 체크하기
 def check_items():
     threading.Timer(60.0, check_items).start()
@@ -116,14 +129,21 @@ def check_items():
             inhatc_db.remove(member, item['_id'])
 
 def main():
+    # MongoDB 연결
     global inhatc_db
     inhatc_db = dbm.InhatcItemDB()
 
-    # inhatc_db.add('채팅번호', barcode_id=barcode_id, name='코카콜라!!')
+    # 테스트 추가
+    # inhatc_db.add('채팅번호', barcode_id=barcode_id, name='코카콜라!!', expire_date='2020-12-14')
+
+    # 콜라 번호 조회 테스트
     # COLA_ID = '8801094082604'
     # print(getInfo(COLA_ID))
+
+    # 샘플 이미지 테스트
     # test_sample_image()
 
+    # 유통기한 체크
     check_items()
 
     """Run bot."""
